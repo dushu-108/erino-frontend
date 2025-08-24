@@ -46,13 +46,28 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
-      await authAPI.register(userData);
-      return { success: true };
+      // Make sure to send the data in the format your backend expects
+      const response = await authAPI.register({
+        name: userData.name,
+        email: userData.email,
+        password: userData.password
+      });
+      
+      // If registration is successful, automatically log the user in
+      if (response.data.token) {
+        localStorage.setItem('token', response.data.token);
+        setUser(response.data.user);
+      }
+      
+      return { 
+        success: true, 
+        user: response.data.user 
+      };
     } catch (error) {
       console.error('Registration failed:', error);
       return { 
         success: false, 
-        error: error.response?.data?.error || 'Registration failed. Please try again.' 
+        error: error.response?.data?.message || 'Registration failed. Please try again.' 
       };
     }
   };

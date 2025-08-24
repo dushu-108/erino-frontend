@@ -27,8 +27,14 @@ const Register = () => {
   const onSubmit = async (e) => {
     e.preventDefault();
     
+    // Basic validation
     if (password !== password2) {
       setError('Passwords do not match');
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Password should be at least 6 characters');
       return;
     }
 
@@ -36,22 +42,25 @@ const Register = () => {
       setLoading(true);
       setError('');
       
-      const result = await register({ name, email, password });
+      console.log('Attempting to register user:', { name, email });
+      const result = await register({ 
+        name, 
+        email, 
+        password 
+      });
+      
+      console.log('Registration result:', result);
       
       if (result.success) {
-        // Redirect to login after successful registration
-        navigate('/login', { 
-          state: { 
-            message: 'Registration successful! Please log in.',
-            from: '/login'
-          } 
-        });
+        // If auto-login was successful, redirect to dashboard
+        navigate('/leads');
       } else {
-        setError(result.error);
+        setError(result.error || 'Registration failed. Please try again.');
       }
     } catch (err) {
-      setError('An unexpected error occurred. Please try again.');
       console.error('Registration error:', err);
+      const errorMessage = err.response?.data?.message || 'An unexpected error occurred. Please try again.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
